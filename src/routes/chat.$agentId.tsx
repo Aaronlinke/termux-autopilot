@@ -241,9 +241,10 @@ function ChatShell({
 
             {status === "submitted" && (
               <div className="mt-2 px-2 font-mono text-sm">
-                <Shimmer>{agent.emoji} {agent.name} denkt nach…</Shimmer>
+                <Shimmer>{`${agent.emoji} ${agent.name} denkt nach…`}</Shimmer>
               </div>
             )}
+
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
@@ -251,11 +252,11 @@ function ChatShell({
         {/* Composer */}
         <div className="sticky bottom-0 border-t border-border bg-background/85 py-3 backdrop-blur">
           <PromptInput
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={() => {
               void submit();
             }}
           >
+
             <PromptInputTextarea
               ref={textareaRef}
               value={input}
