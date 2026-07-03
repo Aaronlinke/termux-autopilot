@@ -151,18 +151,20 @@
 
 @utility scanlines {
   position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      oklch(1 0 0 / 0.02) 2px,
+      oklch(1 0 0 / 0.02) 3px
+    );
+    pointer-events: none;
+    border-radius: inherit;
+  }
 }
-@utility scanlines::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 2px,
-    oklch(1 0 0 / 0.02) 2px,
-    oklch(1 0 0 / 0.02) 3px
-  );
-  pointer-events: none;
-  border-radius: inherit;
-}
+
