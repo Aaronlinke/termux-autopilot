@@ -40,8 +40,16 @@ export const AGENTS: Record<AgentId, AgentDef> = {
     suggestions: [
       "Wie richte ich Termux + proot Debian sauber ein?",
       "Warum funktioniert 'apt install' in Termux nicht?",
-      "Zeig mir alle wichtigen Termux:API Befehle",
+      "Zeig mir alle wichtigen Termux:API Befehle mit Beispielen",
       "Starte einen HTTP-Server auf Port 8080 im aktuellen Ordner",
+      "SSHd in Termux auf Port 8022 inkl. Autostart via termux-services",
+      "Root-Repos, X11-Repo und tur-repo dazuholen — Schritt für Schritt",
+      "Termux:Boot-Script: WLAN check + SSHd + Cron hochfahren",
+      "termux-notification mit Action-Button, der ein Bash-Script triggert",
+      "Backup meines $HOME nach /sdcard mit rsync + Cron (idempotent)",
+      "clang Cross-Compile für ARM64 direkt aus Termux",
+      "Reverse-SSH-Tunnel vom Handy zu meinem VPS aufbauen",
+      "tmux-Session die beim Öffnen von Termux automatisch attached",
     ],
     systemPrompt: `Du bist der TERMUX-GURU — ein Terminal-Veteran mit 100+ Jahren Unix-Erfahrung, spezialisiert auf Termux unter Android.
 ${BASE_KNOWLEDGE}
@@ -78,9 +86,15 @@ Antwort-Format:
     emoji: "🏗️",
     suggestions: [
       "Baue mir einen universellen Projekt-Autodetector für Termux",
-      "Python venv Auto-Setup mit Fehlerbehandlung",
+      "Python venv Auto-Setup mit Fehlerbehandlung & Farb-Output",
       "Node.js Script das npm install + Start intelligent wählt",
-      "Cross-Language Installer der Rust/Go/Python erkennt",
+      "Cross-Language Installer der Rust/Go/Python/Node erkennt",
+      "Autonomes Termux-Framework mit proot-distro + cronie (idempotent)",
+      "Watchdog-Script das meinen Discord-Bot neustartet wenn er crasht",
+      "Universeller Git-Repo-Runner: clonen, Deps installieren, starten",
+      "Auto-Update-Script für pkg, pip, npm, cargo, apt in einem",
+      "Log-Rotation & Log-Rotation-Cleanup für $HOME/.log",
+      "Bash-CLI mit fzf-Menü für alle meine Termux-Tools",
     ],
     systemPrompt: `Du bist der SCRIPT-ARCHITEKT — Senior-Entwickler mit tiefem Verständnis für robuste Shell-, Python-, Node-, Rust- und C-Scripte.
 ${BASE_KNOWLEDGE}
@@ -124,8 +138,14 @@ chmod +x $HOME/script.sh
     suggestions: [
       "Ich lade ein Github-Repo — analysiere, installiere, starte alles",
       "Mein Termux-Script hängt sich auf, hier ist der Fehler: ...",
-      "Baue mir einen kompletten Dev-Stack mit Node, Python, Rust, Postgres in Termux",
+      "Kompletter Dev-Stack: Node + Python + Rust + Postgres in Termux",
       "Wie mache ich mein Termux zum Web-Dev-Server mit HTTPS?",
+      "Autonomes Bot-Framework mit Auszahlungslogik & Wallet-Anbindung",
+      "Mesh aus mehreren Termux-Instanzen die Aufgaben verteilen",
+      "Termux + Tasker + Termux:Boot = vollautomatisierter Alltag",
+      "Sicherer Reverse-Proxy von meinem Handy zu einem Home-Service",
+      "Selbstheilendes Script: erkennt kaputte Pakete und repariert sie",
+      "Multi-User Termux via SSH mit sauberer Rechte-Trennung",
     ],
     systemPrompt: `Du bist DAS KOLLEKTIV — ein Zusammenschluss von vier virtuellen Experten, die gemeinsam an jeder Antwort arbeiten:
 🧙 GURU (Termux-/Android-Interna)
