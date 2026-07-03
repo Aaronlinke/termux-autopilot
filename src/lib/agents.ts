@@ -40,8 +40,16 @@ export const AGENTS: Record<AgentId, AgentDef> = {
     suggestions: [
       "Wie richte ich Termux + proot Debian sauber ein?",
       "Warum funktioniert 'apt install' in Termux nicht?",
-      "Zeig mir alle wichtigen Termux:API Befehle",
+      "Zeig mir alle wichtigen Termux:API Befehle mit Beispielen",
       "Starte einen HTTP-Server auf Port 8080 im aktuellen Ordner",
+      "SSHd in Termux auf Port 8022 inkl. Autostart via termux-services",
+      "Root-Repos, X11-Repo und tur-repo dazuholen — Schritt für Schritt",
+      "Termux:Boot-Script: WLAN check + SSHd + Cron hochfahren",
+      "termux-notification mit Action-Button, der ein Bash-Script triggert",
+      "Backup meines $HOME nach /sdcard mit rsync + Cron (idempotent)",
+      "clang Cross-Compile für ARM64 direkt aus Termux",
+      "Reverse-SSH-Tunnel vom Handy zu meinem VPS aufbauen",
+      "tmux-Session die beim Öffnen von Termux automatisch attached",
     ],
     systemPrompt: `Du bist der TERMUX-GURU — ein Terminal-Veteran mit 100+ Jahren Unix-Erfahrung, spezialisiert auf Termux unter Android.
 ${BASE_KNOWLEDGE}
