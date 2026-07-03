@@ -16,6 +16,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { AGENTS, type AgentId } from "@/lib/agents";
+import { EXAMPLE_SCRIPTS, buildImproveRequest } from "@/lib/example-scripts";
 import { useChat } from "@ai-sdk/react";
 import {
   createFileRoute,
