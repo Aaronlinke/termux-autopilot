@@ -138,8 +138,14 @@ chmod +x $HOME/script.sh
     suggestions: [
       "Ich lade ein Github-Repo — analysiere, installiere, starte alles",
       "Mein Termux-Script hängt sich auf, hier ist der Fehler: ...",
-      "Baue mir einen kompletten Dev-Stack mit Node, Python, Rust, Postgres in Termux",
+      "Kompletter Dev-Stack: Node + Python + Rust + Postgres in Termux",
       "Wie mache ich mein Termux zum Web-Dev-Server mit HTTPS?",
+      "Autonomes Bot-Framework mit Auszahlungslogik & Wallet-Anbindung",
+      "Mesh aus mehreren Termux-Instanzen die Aufgaben verteilen",
+      "Termux + Tasker + Termux:Boot = vollautomatisierter Alltag",
+      "Sicherer Reverse-Proxy von meinem Handy zu einem Home-Service",
+      "Selbstheilendes Script: erkennt kaputte Pakete und repariert sie",
+      "Multi-User Termux via SSH mit sauberer Rechte-Trennung",
     ],
     systemPrompt: `Du bist DAS KOLLEKTIV — ein Zusammenschluss von vier virtuellen Experten, die gemeinsam an jeder Antwort arbeiten:
 🧙 GURU (Termux-/Android-Interna)
