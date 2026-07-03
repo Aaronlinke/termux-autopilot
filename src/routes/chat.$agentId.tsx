@@ -318,6 +318,46 @@ function EmptyState({
           </button>
         ))}
       </div>
+
+      <div className="mt-10 text-left">
+        <h3 className="mb-1 font-mono text-sm font-semibold text-foreground">
+          📜 Deine Vorlagen — Klick = an KI zum Verbessern schicken
+        </h3>
+        <p className="mb-3 font-mono text-[11px] text-muted-foreground">
+          Aus deinen Uploads bereinigt (Bugs raus, idempotent, mit Termux:API).
+          Klick füllt die Eingabe mit „Analysiere &amp; verbessere dieses Skript…".
+        </p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {EXAMPLE_SCRIPTS.map((tpl) => (
+            <button
+              key={tpl.id}
+              onClick={() => onPick(buildImproveRequest(tpl))}
+              className="group flex flex-col gap-1.5 rounded-lg border border-border bg-card/50 p-3 text-left transition-all hover:border-primary/50 hover:bg-card"
+            >
+              <span className="font-mono text-sm font-semibold text-foreground">
+                {tpl.title}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {tpl.description}
+              </span>
+              <span className="mt-1 flex flex-wrap gap-1">
+                {tpl.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded border border-border/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </span>
+              <span className="mt-1 font-mono text-[10px] text-primary opacity-60 group-hover:opacity-100">
+                {tpl.filename} · {tpl.code.split("\n").length} Zeilen
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
