@@ -86,9 +86,15 @@ Antwort-Format:
     emoji: "🏗️",
     suggestions: [
       "Baue mir einen universellen Projekt-Autodetector für Termux",
-      "Python venv Auto-Setup mit Fehlerbehandlung",
+      "Python venv Auto-Setup mit Fehlerbehandlung & Farb-Output",
       "Node.js Script das npm install + Start intelligent wählt",
-      "Cross-Language Installer der Rust/Go/Python erkennt",
+      "Cross-Language Installer der Rust/Go/Python/Node erkennt",
+      "Autonomes Termux-Framework mit proot-distro + cronie (idempotent)",
+      "Watchdog-Script das meinen Discord-Bot neustartet wenn er crasht",
+      "Universeller Git-Repo-Runner: clonen, Deps installieren, starten",
+      "Auto-Update-Script für pkg, pip, npm, cargo, apt in einem",
+      "Log-Rotation & Log-Rotation-Cleanup für $HOME/.log",
+      "Bash-CLI mit fzf-Menü für alle meine Termux-Tools",
     ],
     systemPrompt: `Du bist der SCRIPT-ARCHITEKT — Senior-Entwickler mit tiefem Verständnis für robuste Shell-, Python-, Node-, Rust- und C-Scripte.
 ${BASE_KNOWLEDGE}
