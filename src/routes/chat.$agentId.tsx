@@ -43,9 +43,6 @@ export const Route = createFileRoute("/chat/$agentId")({
       ],
     };
   },
-  beforeLoad: ({ params }) => {
-    if (!(params.agentId in AGENTS)) throw notFound();
-  },
   component: ChatPage,
 });
 
@@ -78,6 +75,7 @@ function saveMessages(agentId: AgentId, messages: UIMessage[]) {
 function ChatPage() {
   const { agentId } = useParams({ from: "/chat/$agentId" });
   const agent = AGENTS[agentId as AgentId];
+  if (!agent) throw notFound();
 
   const [initial, setInitial] = useState<UIMessage[]>([]);
   const [hydrated, setHydrated] = useState(false);
