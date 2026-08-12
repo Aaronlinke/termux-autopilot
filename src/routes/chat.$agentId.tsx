@@ -17,6 +17,13 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { AGENTS, type AgentId } from "@/lib/agents";
 import { EXAMPLE_SCRIPTS, buildImproveRequest } from "@/lib/example-scripts";
+import {
+  addEntries,
+  buildContextBlock,
+  extractFromAnswer,
+  knowledgeStats,
+  subscribeKnowledge,
+} from "@/lib/knowledge";
 import { useChat } from "@ai-sdk/react";
 import {
   createFileRoute,
@@ -25,7 +32,7 @@ import {
   useParams,
 } from "@tanstack/react-router";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Brain, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -138,6 +145,47 @@ function ChatShell({
     saveMessages(agentId, messages);
   }, [agentId, messages, status]);
 
+  // Wissensspeicher: Stats + automatisches Abspeichern fertiger Antworten
+  const [stats, setStats] = useState(() => ({
+    count: 0,
+    modules: 0,
+    words: 0,
+    budget: 0,
+  }));
+  useEffect(() => {
+    const sync = () => setStats(knowledgeStats());
+    sync();
+    return subscribeKnowledge(sync);
+  }, []);
+
+  const savedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (savedRef.current.has(last.id)) return;
+    savedRef.current.add(last.id);
+
+    const answer = last.parts
+      .map((p) => (p.type === "text" ? p.text : ""))
+      .join("");
+    const question =
+      [...messages]
+        .reverse()
+        .find((m) => m.role === "user")
+        ?.parts.map((p) => (p.type === "text" ? p.text : ""))
+        .join("") ?? "";
+    const added = addEntries(extractFromAnswer(answer, question, agentId));
+    const mods = added.filter((e) => e.kind === "module").length;
+    if (added.length > 0) {
+      toast.success(
+        mods > 0
+          ? `${mods} Modul(e) + Erkenntnis im Wissensspeicher gesichert.`
+          : "Erkenntnis im Wissensspeicher gesichert.",
+      );
+    }
+  }, [status, messages, agentId]);
+
   const [input, setInput] = useState("");
   const isLoading = status === "submitted" || status === "streaming";
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -154,7 +202,7 @@ function ChatShell({
     const text = input.trim();
     if (!text || isLoading) return;
     setInput("");
-    await sendMessage({ text });
+    await sendMessage({ text }, { body: { knowledge: buildContextBlock() } });
   };
 
   const clear = () => {
@@ -198,6 +246,15 @@ function ChatShell({
               {agent.role}
             </p>
           </div>
+
+          <Link
+            to="/wissen"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-2.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            title="Wissensspeicher"
+          >
+            <Brain className="h-3.5 w-3.5 text-primary" />
+            <span>{stats.count}</span>
+          </Link>
 
           <button
             onClick={clear}
@@ -271,7 +328,9 @@ function ChatShell({
             </PromptInputFooter>
           </PromptInput>
           <p className="mt-2 px-1 font-mono text-[10px] text-muted-foreground">
-            Verlauf wird nur in deinem Browser gespeichert · Powered by Lovable AI
+            Verlauf + Wissensspeicher liegen nur in deinem Browser ·{" "}
+            {stats.words.toLocaleString("de-DE")} / {stats.budget.toLocaleString("de-DE")} Wörter
+            Kontext · Powered by Lovable AI
           </p>
         </div>
       </main>
