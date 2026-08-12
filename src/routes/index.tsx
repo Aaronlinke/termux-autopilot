@@ -1,6 +1,6 @@
 import { AGENT_LIST } from "@/lib/agents";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Terminal, ArrowRight } from "lucide-react";
+import { Terminal, ArrowRight, Brain } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -61,6 +61,26 @@ function Index() {
             </span>
           </div>
         </header>
+
+        {/* Wissensspeicher */}
+        <section className="mb-10">
+          <Link
+            to="/wissen"
+            className="group flex items-center gap-3 rounded-xl border border-border bg-card/60 p-4 backdrop-blur transition-all hover:border-primary/50 hover:bg-card"
+          >
+            <Brain className="h-5 w-5 text-primary" />
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-sm font-semibold text-foreground">
+                Wissensspeicher
+              </p>
+              <p className="font-mono text-xs text-muted-foreground">
+                Jede Antwort wird automatisch gesichert — alle Agenten lesen sie
+                bei jeder Anfrage mit.
+              </p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+          </Link>
+        </section>
 
         {/* Agent grid */}
         <section>
