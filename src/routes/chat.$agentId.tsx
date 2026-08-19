@@ -388,7 +388,7 @@ function ChatShell({
               ))
             )}
 
-            {status === "submitted" && (
+            {(status === "submitted" || puterBusy) && (
               <div className="mt-2 px-2 font-mono text-sm">
                 <Shimmer>{`${agent.emoji} ${agent.name} denkt nach…`}</Shimmer>
               </div>
@@ -400,6 +400,45 @@ function ChatShell({
 
         {/* Composer */}
         <div className="sticky bottom-0 border-t border-border bg-background/85 py-3 backdrop-blur">
+          {/* Provider-Umschalter */}
+          <div className="mb-2 flex flex-wrap items-center gap-2 px-1">
+            <div className="inline-flex overflow-hidden rounded-md border border-border">
+              {(["lovable", "puter"] as Provider[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => switchProvider(p)}
+                  disabled={isLoading}
+                  className={`px-2.5 py-1 font-mono text-[11px] transition-colors disabled:opacity-40 ${
+                    provider === p
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {p === "lovable" ? "Lovable AI" : "Puter.js · gratis"}
+                </button>
+              ))}
+            </div>
+
+            {provider === "puter" && (
+              <select
+                value={puterModel}
+                onChange={(e) => {
+                  setPuterModelState(e.target.value);
+                  setPuterModel(e.target.value);
+                }}
+                disabled={isLoading}
+                className="rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] text-foreground disabled:opacity-40"
+                aria-label="Puter-Modell"
+              >
+                {PUTER_MODELS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
           <PromptInput
             onSubmit={() => {
               void submit();
@@ -415,7 +454,7 @@ function ChatShell({
             />
             <PromptInputFooter className="justify-end">
               <PromptInputSubmit
-                status={status}
+                status={puterBusy ? "streaming" : status}
                 disabled={!input.trim() || isLoading}
               />
             </PromptInputFooter>
@@ -423,9 +462,25 @@ function ChatShell({
           <p className="mt-2 px-1 font-mono text-[10px] text-muted-foreground">
             Verlauf + Wissensspeicher liegen nur in deinem Browser ·{" "}
             {stats.words.toLocaleString("de-DE")} / {stats.budget.toLocaleString("de-DE")} Wörter
-            Kontext · Powered by Lovable AI
+            Kontext ·{" "}
+            {provider === "puter" ? (
+              <>
+                <a
+                  href="https://developer.puter.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  Powered by Puter
+                </a>{" "}
+                (kostenlos, dein Puter-Konto zahlt)
+              </>
+            ) : (
+              "Powered by Lovable AI"
+            )}
           </p>
         </div>
+
       </main>
     </div>
   );
