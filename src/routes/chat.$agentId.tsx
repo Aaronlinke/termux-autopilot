@@ -24,6 +24,17 @@ import {
   knowledgeStats,
   subscribeKnowledge,
 } from "@/lib/knowledge";
+import {
+  DEFAULT_PUTER_MODEL,
+  PUTER_MODELS,
+  getProvider,
+  getPuterModel,
+  puterChatStream,
+  setProvider,
+  setPuterModel,
+  type Provider,
+} from "@/lib/puter";
+import { buildSystemPrompt } from "@/lib/system-prompt";
 import { useChat } from "@ai-sdk/react";
 import {
   createFileRoute,
@@ -35,6 +46,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { ArrowLeft, Brain, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/chat/$agentId")({
   head: ({ params }) => {
