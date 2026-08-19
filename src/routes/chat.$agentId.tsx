@@ -24,6 +24,17 @@ import {
   knowledgeStats,
   subscribeKnowledge,
 } from "@/lib/knowledge";
+import {
+  DEFAULT_PUTER_MODEL,
+  PUTER_MODELS,
+  getProvider,
+  getPuterModel,
+  puterChatStream,
+  setProvider,
+  setPuterModel,
+  type Provider,
+} from "@/lib/puter";
+import { buildSystemPrompt } from "@/lib/system-prompt";
 import { useChat } from "@ai-sdk/react";
 import {
   createFileRoute,
@@ -35,6 +46,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { ArrowLeft, Brain, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/chat/$agentId")({
   head: ({ params }) => {
@@ -158,9 +170,19 @@ function ChatShell({
     return subscribeKnowledge(sync);
   }, []);
 
+  // Provider: Lovable AI (Server) oder Puter.js (kostenlos, direkt im Browser)
+  const [provider, setProviderState] = useState<Provider>("lovable");
+  const [puterModel, setPuterModelState] = useState<string>(DEFAULT_PUTER_MODEL);
+  const [puterBusy, setPuterBusy] = useState(false);
+
+  useEffect(() => {
+    setProviderState(getProvider());
+    setPuterModelState(getPuterModel());
+  }, []);
+
   const savedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
-    if (status !== "ready") return;
+    if (status !== "ready" || puterBusy) return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant") return;
     if (savedRef.current.has(last.id)) return;
@@ -184,10 +206,10 @@ function ChatShell({
           : "Erkenntnis im Wissensspeicher gesichert.",
       );
     }
-  }, [status, messages, agentId]);
+  }, [status, messages, agentId, puterBusy]);
 
   const [input, setInput] = useState("");
-  const isLoading = status === "submitted" || status === "streaming";
+  const isLoading = status === "submitted" || status === "streaming" || puterBusy;
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -198,11 +220,81 @@ function ChatShell({
     if (!isLoading) textareaRef.current?.focus();
   }, [isLoading]);
 
+  const sendViaPuter = async (text: string) => {
+    const id = `puter-${Date.now().toString(36)}`;
+    const userMsg: UIMessage = {
+      id: `${id}-u`,
+      role: "user",
+      parts: [{ type: "text", text }],
+    };
+    const assistantId = `${id}-a`;
+
+    const history = [...messages, userMsg].map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    }));
+
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      { id: assistantId, role: "assistant", parts: [{ type: "text", text: "" }] },
+    ]);
+    setPuterBusy(true);
+
+    let acc = "";
+    try {
+      await puterChatStream(
+        [
+          { role: "system", content: buildSystemPrompt(agentId, buildContextBlock()) },
+          ...history,
+        ],
+        puterModel,
+        (delta) => {
+          acc += delta;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId
+                ? { ...m, parts: [{ type: "text", text: acc }] }
+                : m,
+            ),
+          );
+        },
+      );
+      if (!acc.trim()) {
+        toast.error("Puter hat keine Antwort geliefert — anderes Modell probieren.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error
+          ? `Puter-Fehler: ${err.message}`
+          : "Puter-Fehler — Konsole prüfen.",
+      );
+      setMessages((prev) => prev.filter((m) => m.id !== assistantId || acc));
+    } finally {
+      setPuterBusy(false);
+    }
+  };
+
   const submit = async () => {
     const text = input.trim();
     if (!text || isLoading) return;
     setInput("");
+    if (provider === "puter") {
+      await sendViaPuter(text);
+      return;
+    }
     await sendMessage({ text }, { body: { knowledge: buildContextBlock() } });
+  };
+
+  const switchProvider = (p: Provider) => {
+    setProviderState(p);
+    setProvider(p);
+    toast.success(
+      p === "puter"
+        ? "Puter.js aktiv — kostenlos, läuft über dein Puter-Konto."
+        : "Lovable AI aktiv.",
+    );
   };
 
   const clear = () => {
@@ -211,6 +303,7 @@ function ChatShell({
     toast.success("Chat geleert.");
     textareaRef.current?.focus();
   };
+
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -295,7 +388,7 @@ function ChatShell({
               ))
             )}
 
-            {status === "submitted" && (
+            {(status === "submitted" || puterBusy) && (
               <div className="mt-2 px-2 font-mono text-sm">
                 <Shimmer>{`${agent.emoji} ${agent.name} denkt nach…`}</Shimmer>
               </div>
@@ -307,6 +400,45 @@ function ChatShell({
 
         {/* Composer */}
         <div className="sticky bottom-0 border-t border-border bg-background/85 py-3 backdrop-blur">
+          {/* Provider-Umschalter */}
+          <div className="mb-2 flex flex-wrap items-center gap-2 px-1">
+            <div className="inline-flex overflow-hidden rounded-md border border-border">
+              {(["lovable", "puter"] as Provider[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => switchProvider(p)}
+                  disabled={isLoading}
+                  className={`px-2.5 py-1 font-mono text-[11px] transition-colors disabled:opacity-40 ${
+                    provider === p
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {p === "lovable" ? "Lovable AI" : "Puter.js · gratis"}
+                </button>
+              ))}
+            </div>
+
+            {provider === "puter" && (
+              <select
+                value={puterModel}
+                onChange={(e) => {
+                  setPuterModelState(e.target.value);
+                  setPuterModel(e.target.value);
+                }}
+                disabled={isLoading}
+                className="rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] text-foreground disabled:opacity-40"
+                aria-label="Puter-Modell"
+              >
+                {PUTER_MODELS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
           <PromptInput
             onSubmit={() => {
               void submit();
@@ -322,7 +454,7 @@ function ChatShell({
             />
             <PromptInputFooter className="justify-end">
               <PromptInputSubmit
-                status={status}
+                status={puterBusy ? "streaming" : status}
                 disabled={!input.trim() || isLoading}
               />
             </PromptInputFooter>
@@ -330,9 +462,25 @@ function ChatShell({
           <p className="mt-2 px-1 font-mono text-[10px] text-muted-foreground">
             Verlauf + Wissensspeicher liegen nur in deinem Browser ·{" "}
             {stats.words.toLocaleString("de-DE")} / {stats.budget.toLocaleString("de-DE")} Wörter
-            Kontext · Powered by Lovable AI
+            Kontext ·{" "}
+            {provider === "puter" ? (
+              <>
+                <a
+                  href="https://developer.puter.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  Powered by Puter
+                </a>{" "}
+                (kostenlos, dein Puter-Konto zahlt)
+              </>
+            ) : (
+              "Powered by Lovable AI"
+            )}
           </p>
         </div>
+
       </main>
     </div>
   );
