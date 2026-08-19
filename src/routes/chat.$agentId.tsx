@@ -170,9 +170,19 @@ function ChatShell({
     return subscribeKnowledge(sync);
   }, []);
 
+  // Provider: Lovable AI (Server) oder Puter.js (kostenlos, direkt im Browser)
+  const [provider, setProviderState] = useState<Provider>("lovable");
+  const [puterModel, setPuterModelState] = useState<string>(DEFAULT_PUTER_MODEL);
+  const [puterBusy, setPuterBusy] = useState(false);
+
+  useEffect(() => {
+    setProviderState(getProvider());
+    setPuterModelState(getPuterModel());
+  }, []);
+
   const savedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
-    if (status !== "ready") return;
+    if (status !== "ready" || puterBusy) return;
     const last = messages[messages.length - 1];
     if (!last || last.role !== "assistant") return;
     if (savedRef.current.has(last.id)) return;
@@ -196,10 +206,10 @@ function ChatShell({
           : "Erkenntnis im Wissensspeicher gesichert.",
       );
     }
-  }, [status, messages, agentId]);
+  }, [status, messages, agentId, puterBusy]);
 
   const [input, setInput] = useState("");
-  const isLoading = status === "submitted" || status === "streaming";
+  const isLoading = status === "submitted" || status === "streaming" || puterBusy;
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -210,11 +220,81 @@ function ChatShell({
     if (!isLoading) textareaRef.current?.focus();
   }, [isLoading]);
 
+  const sendViaPuter = async (text: string) => {
+    const id = `puter-${Date.now().toString(36)}`;
+    const userMsg: UIMessage = {
+      id: `${id}-u`,
+      role: "user",
+      parts: [{ type: "text", text }],
+    };
+    const assistantId = `${id}-a`;
+
+    const history = [...messages, userMsg].map((m) => ({
+      role: m.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: m.parts.map((p) => (p.type === "text" ? p.text : "")).join(""),
+    }));
+
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      { id: assistantId, role: "assistant", parts: [{ type: "text", text: "" }] },
+    ]);
+    setPuterBusy(true);
+
+    let acc = "";
+    try {
+      await puterChatStream(
+        [
+          { role: "system", content: buildSystemPrompt(agentId, buildContextBlock()) },
+          ...history,
+        ],
+        puterModel,
+        (delta) => {
+          acc += delta;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId
+                ? { ...m, parts: [{ type: "text", text: acc }] }
+                : m,
+            ),
+          );
+        },
+      );
+      if (!acc.trim()) {
+        toast.error("Puter hat keine Antwort geliefert — anderes Modell probieren.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error
+          ? `Puter-Fehler: ${err.message}`
+          : "Puter-Fehler — Konsole prüfen.",
+      );
+      setMessages((prev) => prev.filter((m) => m.id !== assistantId || acc));
+    } finally {
+      setPuterBusy(false);
+    }
+  };
+
   const submit = async () => {
     const text = input.trim();
     if (!text || isLoading) return;
     setInput("");
+    if (provider === "puter") {
+      await sendViaPuter(text);
+      return;
+    }
     await sendMessage({ text }, { body: { knowledge: buildContextBlock() } });
+  };
+
+  const switchProvider = (p: Provider) => {
+    setProviderState(p);
+    setProvider(p);
+    toast.success(
+      p === "puter"
+        ? "Puter.js aktiv — kostenlos, läuft über dein Puter-Konto."
+        : "Lovable AI aktiv.",
+    );
   };
 
   const clear = () => {
@@ -223,6 +303,7 @@ function ChatShell({
     toast.success("Chat geleert.");
     textareaRef.current?.focus();
   };
+
 
   return (
     <div className="flex min-h-screen flex-col">
