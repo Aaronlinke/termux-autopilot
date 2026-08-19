@@ -1,7 +1,9 @@
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
-import { AGENTS, type AgentId } from "@/lib/agents";
+import { type AgentId } from "@/lib/agents";
+import { buildSystemPrompt } from "@/lib/system-prompt";
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
+
 
 type ChatRequestBody = {
   messages?: unknown;
