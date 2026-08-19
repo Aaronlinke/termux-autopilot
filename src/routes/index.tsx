@@ -143,6 +143,19 @@ function Index() {
             </span>
           </pre>
         </section>
+
+        {/* Footer */}
+        <footer className="mt-10 border-t border-border pt-5 pb-8 font-mono text-[11px] text-muted-foreground">
+          Termux Copilot · KI über Lovable AI oder kostenlos über{" "}
+          <a
+            href="https://developer.puter.com"
+            target="_blank"
+            rel="noreferrer"
+            className="underline hover:text-foreground"
+          >
+            Powered by Puter
+          </a>
+        </footer>
       </div>
     </div>
   );
